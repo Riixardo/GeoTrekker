@@ -25,8 +25,15 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>Street View</title>
-    <script src="apiConfig.js"></script>
-    <script>
+
+    <!-- Orbitron Font Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+
+    <!-- Still don't know why ../apiConfig.js doesn't work-->
+    <script src="./apiConfig.js"></script>
+    <!-- <script>
       document.addEventListener("DOMContentLoaded", function() {
         // Define your variable
         console.log(API_KEY);
@@ -43,7 +50,7 @@
         // Append the script element to the head or body
         document.head.appendChild(script);
       });
-    </script>
+    </script> -->
     <!-- <script async
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyByLLt73nX_7_LJNimwjN9aNupE6X5vcTw&loading=async&callback=initMap&libraries=maps,streetView,geometry">
     </script> -->

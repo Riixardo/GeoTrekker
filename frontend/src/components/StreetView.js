@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import Navbar from './Navbar';
 
 const StreetView = () => {
 
@@ -40,17 +39,16 @@ const StreetView = () => {
 
   return (
     <div>
-      <Navbar></Navbar>
-        <h1 className="text-3xl font-bold underline">
-          Hello world!
-        </h1>
-        defaultwdw <br></br>
-        defaultwdwdwd<br></br>
-        widthd<br></br>
-        defaultwdwdwdd<br></br>
-        windowd<br></br>
-        widthwd<br></br>
-        wdw<br></br>
+      <h1 className="text-3xl font-bold underline">
+        Hello world!
+      </h1>
+      defaultwdw <br></br>
+      defaultwdwdwd<br></br>
+      widthd<br></br>
+      defaultwdwdwdd<br></br>
+      windowd<br></br>
+      widthwd<br></br>
+      wdw<br></br>
       <div id="map" className="h-[600px] w-full"> 
       </div>
     </div>
