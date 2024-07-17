@@ -1,14 +1,14 @@
 import React from 'react';
-import Button from './Button';
+import Button from './PageButton';
 
 const Navbar = () => {
   return (
-    <nav class="bg-transparent p-4">
-    <ul class="list-none p-0 flex flex-col items-center font-orbitron">
-      <li class="mb-4">
+    <nav className="bg-transparent p-4">
+    <ul className="list-none p-0 flex flex-col items-center font-orbitron">
+      <li className="mb-4">
         <Button page={"/play"} text={"Play"}></Button>
       </li>
-      <li class="mb-4">
+      <li className="mb-4">
       <Button page={"/leaderboard"} text={"Leaderboard"}></Button>
       </li>
     </ul>
