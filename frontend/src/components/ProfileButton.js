@@ -10,7 +10,7 @@ const ProfileButton = () => {
     }
 
     return (
-        <img src="/pfp.png" alt="Profile" className="h-24 w-24" onClick={switchToProfile}/>
+        <img src="/pfp.png" alt="Profile" className="w-24 h-24" onClick={switchToProfile}/>
     );
 };
 
