@@ -7,6 +7,25 @@ const crypto = require('crypto');
 
 const pool = new Pool(dbconfig.postgres);
 
+// code 1 = success, code 2 = error occured
+router.get("/api/db/maps", async (req, res) => {
+
+    try {
+        const client = await pool.connect();
+        const result = await client.query("SELECT map_name FROM maps");
+        if (result.rows == 0) {
+            res.json({code: 2})
+            client.release();
+            return;
+        }
+        res.json({code: 1, maps: result.rows});
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 // code 1 = success, code 2 = invalid password, code 3 = no account found, code 4 = other error
 router.post("/api/login", async (req, res) => {
@@ -36,7 +55,6 @@ router.post("/api/login", async (req, res) => {
         console.error("Error fetching message", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
-
 });
 
 // code 1 = success, code 2 = account already exists, code 3 = other error
@@ -70,7 +88,6 @@ router.post("/api/signup", async (req, res) => {
         console.error("Error fetching message", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
-
 });
 
 
