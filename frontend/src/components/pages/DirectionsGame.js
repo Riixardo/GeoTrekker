@@ -4,17 +4,29 @@ const DirectionsGame = () => {
 
     const [err, setErr] = useState("");
 
-    useEffect(() => {
-
+    const reRenderRoundOnRefresh = () => {
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
-        if (!gameState) {
-            setErr("Game Creation Error");
-            return;
-        }
+        const panorama = new window.google.maps.StreetViewPanorama(
+            document.getElementById('map'), { position: gameState.currLocation, pov: { heading: 270, pitch: 0 } });
+        
+        panorama.setVisible(true);
+        panorama.addListener('position_changed', () => {
+            const currentPosition = panorama.getPosition();
+            const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
+            gameStateAlter.currLocation = currentPosition;
+            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
+            sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
+            
+            // If within 15 meters of the target location, alert the user
+            if (distance < 100) {
+                alert('You have found supplies!');
+            }
+        });
+    }
 
-        if (gameState.started) {
-          return;
-        }
+    const generateRound = () => {
+        const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+        gameState.started = true;
 
         const targetLocations = gameState.locations.map((location) => ({lat: location.latitude, lng: location.longitude}));
         const streetViewService = new window.google.maps.StreetViewService();
@@ -27,6 +39,7 @@ const DirectionsGame = () => {
         }
 
         const targetLocation = new window.google.maps.LatLng(targetLocations[gameState.round - 1]);
+        gameState.currTargetLocation = targetLocation;
 
         for (let i = 0; i < 8; i++) {
             const heading = getRandomHeading(gameState.locations[0].heading_from, gameState.locations[0].heading_to);
@@ -44,8 +57,14 @@ const DirectionsGame = () => {
                     panorama.setVisible(true);
                     panorama.addListener('position_changed', () => {
                         const currentPosition = panorama.getPosition();
-                        const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, new window.google.maps.LatLng(targetLocation));
+                        const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
+                        gameStateAlter.currLocation = currentPosition;
+                        console.log(currentPosition);
+                        console.log(gameStateAlter.currTargetLocation);
+                        const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
+                        sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
                         
+                        console.log(distance);
                         // If within 15 meters of the target location, alert the user
                         if (distance < 100) {
                             alert('You have found supplies!');
@@ -56,22 +75,40 @@ const DirectionsGame = () => {
                 }
             });
         }
-        // const map = new window.google.maps.Map(document.getElementById('map'), {
-        //     center: position,
-        //     zoom: 15, // Adjust the zoom level as needed
-        // });
-        // map.setStreetView(panorama);
+        sessionStorage.setItem("gameState", JSON.stringify(gameState));
+    }
 
+    useEffect(() => {
+
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        const waitForMapsLoad = async () => {
+            console.log("waiting about 2 seconds");
+
+            await sleep(2000);
+
+            console.log("2 seconds are over");
+
+            const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+            if (gameState.started) {
+                reRenderRoundOnRefresh();
+                return;
+            }
+            generateRound();
+
+        }
+
+        waitForMapsLoad();
     }, []);
 
     return (
-      <div>
+      <div className="h-screen">
         <h1 className="text-3xl font-bold underline">
           Hello world!
         </h1>
         {err && (<p>Error: {err}</p>)}
         defaultwdw <br></br>
-        <div id="map" className="h-[600px] w-full"> 
+        <div id="map" className="h-3/4 w-full"> 
         </div>
       </div>
     );

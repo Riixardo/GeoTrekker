@@ -41,7 +41,7 @@ const Directions = () => {
         }
         console.log(response.data.locations);
         console.log(window.google.maps.StreetViewSource.OUTDOOR);
-        sessionStorage.setItem("gameState", JSON.stringify({round: 1, started: false, locations: response.data.locations, timer, startingDistance}));
+        sessionStorage.setItem("gameState", JSON.stringify({round: 1, started: false, locations: response.data.locations, timer, startingDistance, currTargetLocation: null, currLocation: null}));
         navigate("/play/directions");
     };
 
