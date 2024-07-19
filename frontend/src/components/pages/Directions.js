@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../PageButton';
 import ProfileButton from '../ProfileButton';
 import axios from 'axios';
@@ -30,10 +31,21 @@ const Directions = () => {
         fetchMaps();
     }, []); 
 
-    const startDirectionsGame = () => {
+    const navigate = useNavigate();
 
-    }
+    const startDirectionsGame = async () => {
+        const response = await axios.post("/api/create-game/directions", { map });
+        if (response.data.code !== 1) {
+            setErr("Error Creating Game");
+            return;
+        }
+        console.log(response.data.locations);
+        console.log(window.google.maps.StreetViewSource.OUTDOOR);
+        sessionStorage.setItem("gameState", JSON.stringify({round: 1, started: false, locations: response.data.locations, timer, startingDistance}));
+        navigate("/play/directions");
+    };
 
+    // 10-59 are seconds, then 60-69 represent 1 minute, 70-79 represent 2 minutes ...
     const handleTimerSlideConversion = (number) => {
         setRawTimer(number);
         if (number < 60) {
@@ -64,13 +76,13 @@ const Directions = () => {
             </div>
             <p>In this gamemode, you are dropped into a randomized street nearby a goal location. Get to the goal location within the specified time to win!</p>
             <div className="flex flex-col w-full h-full items-center justify-end">
-                <button className="text-2xl w-32 mb-40 border rounded bg-gray-200">Start</button>
+                <button className="text-2xl w-32 mb-40 border rounded bg-gray-200" onClick={startDirectionsGame}>Start</button>
                 {err && (<p>{err}</p>)}
                 <div className="flex mb-32 space-x-32">
                     <div className="flex space-x-4 w-1/3 items-center">
                         <label for="distance" className="text-center">Starting Distance <br></br> In meters</label>
-                        <input id="distance" type="range" min="50" max="1000" defaultValue="50" value={startingDistance} className="" onChange={(e) => {setStartingDistance(e.target.value)}}></input>
-                        <input type="number" placeholder="100" min="50" max="1000" defaultValue="100" value={startingDistance} onChange={(e) => {setStartingDistance(e.target.value)}} className="border border-rounded border-2"></input>
+                        <input id="distance" type="range" min="200" max="1000" defaultValue="200" value={startingDistance} className="" onChange={(e) => {setStartingDistance(e.target.value)}}></input>
+                        <input type="number" placeholder="200" min="200" max="1000" defaultValue="200" value={startingDistance} onChange={(e) => {setStartingDistance(e.target.value)}} className="border border-rounded border-2"></input>
                     </div>
                     <div className="flex space-x-4 w-1/3 items-center">
                         <label for="time" className="text-center">Timer</label>
@@ -80,6 +92,7 @@ const Directions = () => {
                     <div className="flex space-x-4 w-1/3 items-center">
                         <label for="map" className="text-center">Map Select</label>
                         <select id="map" className="border border-rounded border-2" onChange={(e) => {setMap(e.target.value)}}>
+                            <option key="base" value={"Random"}>Random</option>
                             {mapOptions.map((option, index) => (
                                 <option key={index} value={option.map_name}>
                                     {option.map_name}

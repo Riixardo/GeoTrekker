@@ -90,6 +90,40 @@ router.post("/api/signup", async (req, res) => {
     }
 });
 
+router.post("/api/create-game/directions", async (req, res) => {
+
+    const map = req.body.map;
+
+    try {
+        const client = await pool.connect();
+        let result;
+        if (map == "Random") {
+            result = await client.query("SELECT location_name, latitude, longitude, map_name, heading_from, heading_to FROM maps JOIN locations ON map_id = map ORDER BY RANDOM() LIMIT 3");
+            console.log(result.rows);
+        }
+        else {
+            result = await client.query("SELECT location_name, latitude, longitude, map_name, heading_from, heading_to FROM maps JOIN locations ON map_id = map WHERE map_name = $1 ORDER BY "
+                + "RANDOM() LIMIT 3", [map]);
+            console.log(result.rows);
+        }
+        if (result.rows.length == 3) {
+            res.json({code: 1, locations: result.rows});
+        } 
+        else {
+            let i = 0;
+            while (result.rows.length < 3) {
+                result.rows.push(result.rows[i]);
+                i++;
+            }
+            res.json({code: 1, locations: result.rows});
+        }
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 // api testing
 router.get("/api/testing", (req, res) => {
