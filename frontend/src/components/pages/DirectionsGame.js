@@ -1,32 +1,79 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import Popup from '../Popup';
 
 const DirectionsGame = () => {
 
+    const [timer, setTimer] = useState(() => {
+        return JSON.parse(sessionStorage.getItem("gameState")).roundTimer;
+    });
+    const [round, setRound] = useState(1);
     const [err, setErr] = useState("");
+
+    const intervalRef = useRef(null); 
+
+    const [openPopup, setOpenPopup] = useState(false);
+
+    const startCountdown = () => {
+        intervalRef.current = setInterval(() => {
+            setTimer(prevTimer => {
+                if (prevTimer === 0) {
+                    clearInterval(intervalRef.current);
+                    return prevTimer;
+                }
+                console.log(prevTimer);
+                const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+                gameState.currTimer = prevTimer - 1;
+                sessionStorage.setItem("gameState", JSON.stringify(gameState));
+                return prevTimer - 1;
+            });
+        }, 1000)
+    }
 
     const reRenderRoundOnRefresh = () => {
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+        if (!gameState.finishedRound) {
+            startCountdown();
+        }
+        setRound(gameState.round);
         const panorama = new window.google.maps.StreetViewPanorama(
             document.getElementById('map'), { position: gameState.currLocation, pov: { heading: 270, pitch: 0 } });
         
         panorama.setVisible(true);
+        if (gameState.finishedRound) {
+            return;
+        }
         panorama.addListener('position_changed', () => {
             const currentPosition = panorama.getPosition();
             const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
             gameStateAlter.currLocation = currentPosition;
             const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
-            sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
             
             // If within 15 meters of the target location, alert the user
             if (distance < 100) {
-                alert('You have found supplies!');
+                setOpenPopup(true);
+                gameStateAlter.finishedRound = true;
+                clearInterval(intervalRef.current);
+                //alert('You have found supplies!');
             }
+            sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
         });
     }
 
     const generateRound = () => {
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+        gameState.round++;
+        gameState.finishedRound = false;
+        setRound(gameState.round);
+
         gameState.started = true;
+
+        clearInterval(intervalRef.current);
+        console.log("POKPOK");
+        setTimer(gameState.roundTimer);
+        startCountdown();
+        gameState.currTimer = gameState.roundTimer;
+
+        setOpenPopup(false);
 
         const targetLocations = gameState.locations.map((location) => ({lat: location.latitude, lng: location.longitude}));
         const streetViewService = new window.google.maps.StreetViewService();
@@ -62,13 +109,16 @@ const DirectionsGame = () => {
                         console.log(currentPosition);
                         console.log(gameStateAlter.currTargetLocation);
                         const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
-                        sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
                         
                         console.log(distance);
                         // If within 15 meters of the target location, alert the user
                         if (distance < 100) {
-                            alert('You have found supplies!');
+                            setOpenPopup(true);
+                            gameStateAlter.finishedRound = true;
+                            clearInterval(intervalRef.current);
+                            //alert('You have found supplies!');
                         }
+                        sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
                     });
                 } else {
                     console.error('Street View data not found for this location.');
@@ -80,6 +130,7 @@ const DirectionsGame = () => {
 
     useEffect(() => {
 
+        console.log("Hello");
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         const waitForMapsLoad = async () => {
@@ -90,6 +141,22 @@ const DirectionsGame = () => {
             console.log("2 seconds are over");
 
             const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+
+            if (gameState.currTimer !== null) {
+                setTimer(gameState.currTimer);
+                console.log("Timer: " + gameState.currTimer);
+            }
+
+            if (gameState.finishedRound) {
+                setOpenPopup(true);
+            }
+
+            // const panorama = new window.google.maps.StreetViewPanorama(
+            //     document.getElementById('map')
+            // );
+            // panorama.setVisible(true);
+            // return;
+
             if (gameState.started) {
                 reRenderRoundOnRefresh();
                 return;
@@ -99,6 +166,8 @@ const DirectionsGame = () => {
         }
 
         waitForMapsLoad();
+
+        return () => clearInterval(intervalRef.current);
     }, []);
 
     return (
@@ -106,9 +175,13 @@ const DirectionsGame = () => {
         <h1 className="text-3xl font-bold underline">
           Hello world!
         </h1>
+        {round && (<p>Round: {round}</p>)}
+        {(timer !== null) && (<p>Seconds Left: {timer}</p>)}
         {err && (<p>Error: {err}</p>)}
-        defaultwdw <br></br>
-        <div id="map" className="h-3/4 w-full"> 
+        <div className="relative h-screen w-full flex justify-center">
+            {openPopup && (<Popup text="You have found the location!" buttonText="Next" onClick={generateRound}></Popup>)}
+            <div id="map" className="relative h-3/4 w-full z-10"> 
+            </div>
         </div>
       </div>
     );

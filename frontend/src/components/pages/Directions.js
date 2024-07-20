@@ -40,8 +40,8 @@ const Directions = () => {
             return;
         }
         console.log(response.data.locations);
-        console.log(window.google.maps.StreetViewSource.OUTDOOR);
-        sessionStorage.setItem("gameState", JSON.stringify({round: 1, started: false, locations: response.data.locations, timer, startingDistance, currTargetLocation: null, currLocation: null}));
+        const seconds = rawTimer < 60 ? rawTimer : 60 + Math.floor((rawTimer - 60) / 10) * 60;
+        sessionStorage.setItem("gameState", JSON.stringify({round: 0, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, startingDistance, currTargetLocation: null, currLocation: null, finishedRound: false}));
         navigate("/play/directions");
     };
 
@@ -60,7 +60,7 @@ const Directions = () => {
         <div className="flex flex-col items-center font-orbitron w-full h-screen">
             <div className="w-full mb-10">  
                 <div className="inline-block w-1/3 float-left border-box float-left">
-                    <Button page={"/play"} text={"Back"}></Button>
+                    <Button page={"/games"} text={"Back"}></Button>
                 </div>
                 <div className="inline-block w-1/3 float-left border-box text-center">
                     <h1 className="text-3xl font-orbitron font-bold">Directions Game Mode</h1>
