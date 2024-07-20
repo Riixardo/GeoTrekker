@@ -19,8 +19,26 @@ const DirectionsGame = () => {
 
     const navigate = useNavigate();
 
-    const handleGameFailed = () => {
+    const handleGameEnd = () => {
+        console.log("LOLLSSS");
         navigate("/play/directions/endscreen");
+    }
+
+    const addPanoramaPositionListener = (panorama) => {
+        panorama.addListener('position_changed', () => {
+            const currentPosition = panorama.getPosition();
+            const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
+            gameStateAlter.currLocation = currentPosition;
+            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
+            
+            if (distance < 100) {
+                setNextRoundPopup(true);
+                gameStateAlter.finishedRound = true;
+                clearInterval(intervalRef.current);
+                //alert('You have found supplies!');
+            }
+            sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
+        });
     }
 
     const startCountdown = () => {
@@ -60,25 +78,16 @@ const DirectionsGame = () => {
         if (gameState.finishedRound) {
             return;
         }
-        panorama.addListener('position_changed', () => {
-            const currentPosition = panorama.getPosition();
-            const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
-            gameStateAlter.currLocation = currentPosition;
-            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
-            
-            // If within 15 meters of the target location, alert the user
-            if (distance < 100) {
-                setNextRoundPopup(true);
-                gameStateAlter.finishedRound = true;
-                clearInterval(intervalRef.current);
-                //alert('You have found supplies!');
-            }
-            sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
-        });
+        addPanoramaPositionListener(panorama);
     }
 
     const generateRound = () => {
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+        if (gameState.round >= 3) {
+            console.log("I'm here");
+            handleGameEnd();
+            return;
+        }
         gameState.round++;
         gameState.finishedRound = false;
         setRound(gameState.round);
@@ -109,7 +118,11 @@ const DirectionsGame = () => {
         const targetLocation = new window.google.maps.LatLng(targetLocations[gameState.round - 1]);
         gameState.currTargetLocation = targetLocation;
 
-        for (let i = 0; i < 4; i++) {
+        const generateStartingLocation = (times) => {
+            console.log("Tried " + times + " times.");
+            if (times > 8) {
+                console.log("Tried too many times, street view not available for these settings");
+            }
             const heading = getRandomHeading(gameState.locations[0].heading_from, gameState.locations[0].heading_to);
             const tempStartingPosition = window.google.maps.geometry.spherical.computeOffset(targetLocation, gameState.startingDistance, heading);
             streetViewService.getPanorama({ location: tempStartingPosition, radius: 15, source: window.google.maps.StreetViewSource.OUTDOOR}, (data, status) => {
@@ -123,29 +136,15 @@ const DirectionsGame = () => {
                         pitch: 0
                     });
                     panorama.setVisible(true);
-                    panorama.addListener('position_changed', () => {
-                        const currentPosition = panorama.getPosition();
-                        const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
-                        gameStateAlter.currLocation = currentPosition;
-                        console.log(currentPosition);
-                        console.log(gameStateAlter.currTargetLocation);
-                        const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
-                        
-                        console.log(distance);
-                        // If within 15 meters of the target location, alert the user
-                        if (distance < 100) {
-                            setNextRoundPopup(true);
-                            gameStateAlter.finishedRound = true;
-                            clearInterval(intervalRef.current);
-                            //alert('You have found supplies!');
-                        }
-                        sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
-                    });
+                    addPanoramaPositionListener(panorama);
                 } else {
-                    console.error('Street View data not found for this location.');
+                    console.log('Street View data not found for this location.');
+                    generateStartingLocation(times + 1);
                 }
             });
         }
+
+        generateStartingLocation(1);
         sessionStorage.setItem("gameState", JSON.stringify(gameState));
     }
 
@@ -207,7 +206,7 @@ const DirectionsGame = () => {
         </div>
         <div className="relative h-1/8 w-full flex justify-center">
             {nextRoundPopup && (<Popup text="You have found the location!" buttonText="Next" onClick={generateRound}></Popup>)}
-            {timeoutPopup && (<Popup text="You ran out of time!" buttonText="End" onClick={handleGameFailed}></Popup>)}
+            {timeoutPopup && (<Popup text="You ran out of time!" buttonText="End" onClick={handleGameEnd}></Popup>)}
             <div id="map" className="relative h-full w-full z-10"> 
             </div>
         </div>
