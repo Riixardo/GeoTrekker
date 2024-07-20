@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Popup from '../Popup';
 
 const DirectionsGame = () => {
@@ -7,17 +8,31 @@ const DirectionsGame = () => {
         return JSON.parse(sessionStorage.getItem("gameState")).roundTimer;
     });
     const [round, setRound] = useState(1);
-    const [err, setErr] = useState("");
 
     const intervalRef = useRef(null); 
 
-    const [openPopup, setOpenPopup] = useState(false);
+    const [nextRoundPopup, setNextRoundPopup] = useState(false);
+    const [timeoutPopup, setTimeoutPopup] = useState(false);
+
+    const [currMap, setCurrMap] = useState("");
+    const [currTarget, setCurrTarget] = useState("");
+
+    const navigate = useNavigate();
+
+    const handleGameFailed = () => {
+        navigate("/play/directions/endscreen");
+    }
 
     const startCountdown = () => {
         intervalRef.current = setInterval(() => {
             setTimer(prevTimer => {
                 if (prevTimer === 0) {
                     clearInterval(intervalRef.current);
+                    const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+                    gameState.finishedRound = true;
+                    gameState.failed = true;
+                    sessionStorage.setItem("gameState", JSON.stringify(gameState));
+                    setTimeoutPopup(true);
                     return prevTimer;
                 }
                 console.log(prevTimer);
@@ -30,7 +45,10 @@ const DirectionsGame = () => {
     }
 
     const reRenderRoundOnRefresh = () => {
+
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+        setCurrMap(gameState.locations[gameState.round - 1].map_name);
+        setCurrTarget(gameState.locations[gameState.round - 1].location_name);
         if (!gameState.finishedRound) {
             startCountdown();
         }
@@ -50,7 +68,7 @@ const DirectionsGame = () => {
             
             // If within 15 meters of the target location, alert the user
             if (distance < 100) {
-                setOpenPopup(true);
+                setNextRoundPopup(true);
                 gameStateAlter.finishedRound = true;
                 clearInterval(intervalRef.current);
                 //alert('You have found supplies!');
@@ -68,12 +86,15 @@ const DirectionsGame = () => {
         gameState.started = true;
 
         clearInterval(intervalRef.current);
-        console.log("POKPOK");
         setTimer(gameState.roundTimer);
         startCountdown();
         gameState.currTimer = gameState.roundTimer;
 
-        setOpenPopup(false);
+        setNextRoundPopup(false);
+
+        setCurrMap(gameState.locations[gameState.round - 1].map_name);
+        setCurrTarget(gameState.locations[gameState.round - 1].location_name);
+
 
         const targetLocations = gameState.locations.map((location) => ({lat: location.latitude, lng: location.longitude}));
         const streetViewService = new window.google.maps.StreetViewService();
@@ -88,7 +109,7 @@ const DirectionsGame = () => {
         const targetLocation = new window.google.maps.LatLng(targetLocations[gameState.round - 1]);
         gameState.currTargetLocation = targetLocation;
 
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 4; i++) {
             const heading = getRandomHeading(gameState.locations[0].heading_from, gameState.locations[0].heading_to);
             const tempStartingPosition = window.google.maps.geometry.spherical.computeOffset(targetLocation, gameState.startingDistance, heading);
             streetViewService.getPanorama({ location: tempStartingPosition, radius: 15, source: window.google.maps.StreetViewSource.OUTDOOR}, (data, status) => {
@@ -113,7 +134,7 @@ const DirectionsGame = () => {
                         console.log(distance);
                         // If within 15 meters of the target location, alert the user
                         if (distance < 100) {
-                            setOpenPopup(true);
+                            setNextRoundPopup(true);
                             gameStateAlter.finishedRound = true;
                             clearInterval(intervalRef.current);
                             //alert('You have found supplies!');
@@ -148,7 +169,11 @@ const DirectionsGame = () => {
             }
 
             if (gameState.finishedRound) {
-                setOpenPopup(true);
+                setNextRoundPopup(true);
+            }
+
+            if (gameState.failed) {
+                setTimeoutPopup(true);
             }
 
             // const panorama = new window.google.maps.StreetViewPanorama(
@@ -162,7 +187,6 @@ const DirectionsGame = () => {
                 return;
             }
             generateRound();
-
         }
 
         waitForMapsLoad();
@@ -172,15 +196,19 @@ const DirectionsGame = () => {
 
     return (
       <div className="h-screen">
-        <h1 className="text-3xl font-bold underline">
-          Hello world!
-        </h1>
-        {round && (<p>Round: {round}</p>)}
-        {(timer !== null) && (<p>Seconds Left: {timer}</p>)}
-        {err && (<p>Error: {err}</p>)}
-        <div className="relative h-screen w-full flex justify-center">
-            {openPopup && (<Popup text="You have found the location!" buttonText="Next" onClick={generateRound}></Popup>)}
-            <div id="map" className="relative h-3/4 w-full z-10"> 
+        <div className="flex h-7/8 w-full justify-between font-orbitron">
+            <div className="flex w-2/3 justify-start items-center">
+                {currMap && currTarget && (<p>You are in {currMap}! Make your way to the {currTarget} within the time limit</p>)}
+            </div>
+            <div className="flex w-1/3 justify-between items-center">
+                {round && (<div className="border rounded border-4 float-left">Round: {round}</div>)}
+                {(timer !== null) && (<div className="border rounded border-4">Timer: {timer} seconds left</div>)}
+            </div>
+        </div>
+        <div className="relative h-1/8 w-full flex justify-center">
+            {nextRoundPopup && (<Popup text="You have found the location!" buttonText="Next" onClick={generateRound}></Popup>)}
+            {timeoutPopup && (<Popup text="You ran out of time!" buttonText="End" onClick={handleGameFailed}></Popup>)}
+            <div id="map" className="relative h-full w-full z-10"> 
             </div>
         </div>
       </div>

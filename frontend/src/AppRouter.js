@@ -8,6 +8,7 @@ import Login from './components/pages/Login';
 import Signup from './components/pages/Signup';
 import Profile from './components/pages/Profile';
 import Directions from './components/pages/Directions';
+import DirectionsGameEnd from './components/pages/DirectionsGameEnd';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/leaderboard" element={ <Leaderboard />} />
         <Route path="/games/directions" element={<Directions />} />
         <Route path="/play/directions" element={<DirectionsGame />} />
+        <Route path="/play/directions/endscreen" element={<DirectionsGameEnd />} />
       </Routes>
     </Router>
   );
