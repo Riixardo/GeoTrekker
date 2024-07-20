@@ -1,16 +1,10 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 8000; // Set your preferred port number
+const dbRoutes = require('./routes/dbRoutes');
 
 // Middleware
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use('/', dbRoutes); // mounted at /
 
-// Routes
-const indexRouter = require('./routes/index');
-app.use('/', indexRouter); // Mount the index router at the root path
-
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+module.exports = app;

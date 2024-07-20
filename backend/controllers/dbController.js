@@ -1,15 +1,10 @@
-const express = require("express");
-const { Pool } = require("pg");
-const router = express.Router();
-const dbconfig = require("../config/dbconfig.js");
+const pool = require('../db/pool');
+
 // just for testing
 const crypto = require('crypto');
 
-const pool = new Pool(dbconfig.postgres);
-
 // code 1 = success, code 2 = error occured
-router.get("/api/db/maps", async (req, res) => {
-
+const getMaps = async (req, res) => {
     try {
         const client = await pool.connect();
         const result = await client.query("SELECT map_name FROM maps");
@@ -24,11 +19,10 @@ router.get("/api/db/maps", async (req, res) => {
         console.error("Error fetching message", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
-});
-
+}
 
 // code 1 = success, code 2 = invalid password, code 3 = no account found, code 4 = other error
-router.post("/api/login", async (req, res) => {
+const handleLogin = async (req, res) => {
     
     const { email, password } = req.body;
     const lowercase_email = email.toLowerCase();
@@ -55,10 +49,10 @@ router.post("/api/login", async (req, res) => {
         console.error("Error fetching message", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
-});
+}
 
 // code 1 = success, code 2 = account already exists, code 3 = other error
-router.post("/api/signup", async (req, res) => {
+const handleSignup = async (req, res) => {
 
     const { username, email, password } = req.body;
     const lowercase_email = email.toLowerCase();
@@ -88,9 +82,9 @@ router.post("/api/signup", async (req, res) => {
         console.error("Error fetching message", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
-});
+}
 
-router.post("/api/create-game/directions", async (req, res) => {
+const createDirectionsGame = async (req, res) => {
 
     const map = req.body.map;
 
@@ -122,31 +116,11 @@ router.post("/api/create-game/directions", async (req, res) => {
         console.error("Error fetching message", err);
         res.status(500).json({ error: "Internal Server Error" });
     }
-});
+}
 
-
-// api testing
-router.get("/api/testing", (req, res) => {
-    res.send("Hello, World!"); 
-    console.log("testing");
-});
-
-// database testing
-router.get("/api/db-testing", async (req, res) => {
-    try {
-        const client = await pool.connect();
-        const result = await client.query("SELECT * FROM users ORDER BY created_at DESC");
-        if (result.rows.length > 0) {
-            const user = result.rows[0];
-            res.json(user);
-        } else {
-            res.json({ message: "No users found" });
-        }
-        client.release();
-    } catch (err) {
-        console.error("Error fetching message", err);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-});
-
-module.exports = router;
+module.exports = {
+    getMaps,
+    handleLogin,
+    handleSignup,
+    createDirectionsGame
+}

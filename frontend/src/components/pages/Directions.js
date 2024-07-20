@@ -7,7 +7,7 @@ import axios from 'axios';
 const Directions = () => {
 
     const [loggedIn, setLoggedIn] = useState(false);
-    const [startingDistance, setStartingDistance] = useState(100);
+    const [startingDistance, setStartingDistance] = useState(200);
     const [timer, setTimer] = useState("3 minutes");
     const [map, setMap] = useState("Random")
     const [rawTimer, setRawTimer] = useState(80);
@@ -74,7 +74,7 @@ const Directions = () => {
                     )}
                 </div>
             </div>
-            <p>In this gamemode, you are dropped into a randomized street nearby a goal location. Get to the goal location within the specified time to win!</p>
+            <p>In this gamemode, you are dropped into a randomized street nearby a goal location. Get to within 100 meters of the goal before the timer runs out!</p>
             <div className="flex flex-col w-full h-full items-center justify-end">
                 <button className="text-2xl w-32 mb-40 border rounded bg-gray-200" onClick={startDirectionsGame}>Start</button>
                 {err && (<p>{err}</p>)}
