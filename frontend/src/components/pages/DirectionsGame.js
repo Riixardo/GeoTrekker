@@ -32,6 +32,13 @@ const DirectionsGame = () => {
             const distance = window.google.maps.geometry.spherical.computeDistanceBetween(currentPosition, gameStateAlter.currTargetLocation);
             
             if (distance < 100) {
+                panorama.setOptions({
+                    panControl: false,
+                    zoomControl: false,
+                    scrollwheel: false,
+                    clickToGo: false,
+                    disableDefaultUI: true
+                });
                 setNextRoundPopup(true);
                 gameStateAlter.finishedRound = true;
                 clearInterval(intervalRef.current);
@@ -62,6 +69,15 @@ const DirectionsGame = () => {
         }, 1000)
     }
 
+    const updateGameRoundResults = () => {
+        const gameState = JSON.parse(sessionStorage.getItem("gameState"));
+        if (gameState.round === 0) {
+            return;
+        }
+        gameState.results.push({time: timer, roundTimer: gameState.roundTimer, name: gameState.locations[gameState.round - 1].location_name, endingLocation: gameState.currLocation});
+        sessionStorage.setItem("gameState", JSON.stringify(gameState));
+    }
+
     const reRenderRoundOnRefresh = () => {
 
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
@@ -82,9 +98,10 @@ const DirectionsGame = () => {
     }
 
     const generateRound = () => {
+        updateGameRoundResults();
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
         if (gameState.round >= 3) {
-            console.log("I'm here");
+            console.log("Game End.");
             handleGameEnd();
             return;
         }
@@ -195,7 +212,7 @@ const DirectionsGame = () => {
 
     return (
       <div className="h-screen">
-        <div className="flex h-7/8 w-full justify-between font-orbitron">
+        <div className="flex h-1/8 w-full justify-between font-orbitron">
             <div className="flex w-2/3 justify-start items-center">
                 {currMap && currTarget && (<p>You are in {currMap}! Make your way to the {currTarget} within the time limit</p>)}
             </div>
@@ -204,7 +221,7 @@ const DirectionsGame = () => {
                 {(timer !== null) && (<div className="border rounded border-4">Timer: {timer} seconds left</div>)}
             </div>
         </div>
-        <div className="relative h-1/8 w-full flex justify-center">
+        <div className="relative h-7/8 w-full flex justify-center">
             {nextRoundPopup && (<Popup text="You have found the location!" buttonText="Next" onClick={generateRound}></Popup>)}
             {timeoutPopup && (<Popup text="You ran out of time!" buttonText="End" onClick={handleGameEnd}></Popup>)}
             <div id="map" className="relative h-full w-full z-10"> 

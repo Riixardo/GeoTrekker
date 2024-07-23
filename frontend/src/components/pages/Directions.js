@@ -41,7 +41,7 @@ const Directions = () => {
         }
         console.log(response.data.locations);
         const seconds = rawTimer < 60 ? rawTimer : 60 + Math.floor((rawTimer - 60) / 10) * 60;
-        sessionStorage.setItem("gameState", JSON.stringify({round: 0, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, startingDistance, currTargetLocation: null, currLocation: null, finishedRound: false, failed: false}));
+        sessionStorage.setItem("gameState", JSON.stringify({round: 0, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, startingDistance, currTargetLocation: null, currLocation: null, finishedRound: false, failed: false, results: []}));
         navigate("/play/directions");
     };
 
