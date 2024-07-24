@@ -12,7 +12,7 @@ const DirectionsGameEnd = () => {
             center: {lat:0, lng:0}
         });
         for (let i = 0; i < results.length; i++) {
-            const newMarker = new window.google.maps.Marker({
+            new window.google.maps.Marker({
                 position: results[i].endingLocation,
                 map: map,
                 title: results[i].name

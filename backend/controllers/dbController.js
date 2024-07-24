@@ -32,7 +32,13 @@ const handleLogin = async (req, res) => {
         const result = await client.query("SELECT * FROM users WHERE email = $1", [lowercase_email]);
         if (result.rows.length == 1 && result.rows[0].password == password) {
             const user = result.rows[0].username;
-            res.json({code: 1, userData: {user}, token: crypto.randomBytes(32).toString('hex')});
+            const token = crypto.randomBytes(32).toString("hex");
+            const user_id = result.rows[0].id;
+            const insert_result = await client.query("INSERT INTO sessions VALUES ($1, $2) RETURNING *", [token, user_id]);
+            if (insert_result.rows.length > 0) {
+                res.json({code: 1, userData: {user, user_id}, token});
+                return;
+            }
         } 
         else if (result.rows.length == 1 && result.rows[0].password != password) {
             res.json({code: 2});
@@ -87,25 +93,27 @@ const handleSignup = async (req, res) => {
 const createDirectionsGame = async (req, res) => {
 
     const map = req.body.map;
+    const rounds = parseInt(req.body.rounds, 10);
+    console.log(rounds);
 
     try {
         const client = await pool.connect();
         let result;
         if (map == "Random") {
-            result = await client.query("SELECT location_name, latitude, longitude, map_name, heading_from, heading_to FROM maps JOIN locations ON map_id = map ORDER BY RANDOM() LIMIT 3");
+            result = await client.query("SELECT location_name, latitude, longitude, map_name, heading_from, heading_to FROM maps JOIN locations ON map_id = map ORDER BY RANDOM() LIMIT $1", [rounds]);
             console.log(result.rows);
         }
         else {
             result = await client.query("SELECT location_name, latitude, longitude, map_name, heading_from, heading_to FROM maps JOIN locations ON map_id = map WHERE map_name = $1 ORDER BY "
-                + "RANDOM() LIMIT 3", [map]);
+                + "RANDOM() LIMIT $2", [map, rounds]);
             console.log(result.rows);
         }
-        if (result.rows.length == 3) {
+        if (result.rows.length == rounds) {
             res.json({code: 1, locations: result.rows});
         } 
         else {
             let i = 0;
-            while (result.rows.length < 3) {
+            while (result.rows.length < rounds) {
                 result.rows.push(result.rows[i]);
                 i++;
             }
@@ -118,9 +126,53 @@ const createDirectionsGame = async (req, res) => {
     }
 }
 
+const handleLogout = async (req, res) => {
+    const { token } = req.body;
+    
+    try {
+        const client = await pool.connect();
+        const result = await client.query("DELETE FROM sessions WHERE session_id = $1 RETURNING *", [token]);
+        if (result.rows.length > 0) {
+            res.json({code: 1});
+            console.log("Logged out of " + token);
+        } 
+        else {
+            console.log("Deleted non-existing session");
+            res.json({code: 2});
+        }
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+const resumeSession = async (req, res) => {
+    const { token, user_id } = req.body;
+    
+    try {
+        const client = await pool.connect();
+        const result = await client.query("INSERT INTO sessions VALUES ($1, $2) RETURNING *", [token, user_id]);
+        if (result.rows.length > 0) {
+            res.json({code: 1});
+            console.log("Resumed Session " + token);
+        } 
+        else {
+            console.log("Insertion failed");
+            res.json({code: 2});
+        }
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
 module.exports = {
     getMaps,
     handleLogin,
     handleSignup,
-    createDirectionsGame
+    createDirectionsGame,
+    handleLogout,
+    resumeSession
 }

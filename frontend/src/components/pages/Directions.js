@@ -11,6 +11,7 @@ const Directions = () => {
     const [timer, setTimer] = useState("3 minutes");
     const [map, setMap] = useState("Random")
     const [rawTimer, setRawTimer] = useState(80);
+    const [rounds, setRounds] = useState(3);
     const [mapOptions, setMapOptions] = useState([]);
 
     const [err, setErr] = useState("");
@@ -34,14 +35,18 @@ const Directions = () => {
     const navigate = useNavigate();
 
     const startDirectionsGame = async () => {
-        const response = await axios.post("/api/create-game/directions", { map });
+        if (!loggedIn) {
+            alert("You must be logged in to play");
+            return;
+        }
+        const response = await axios.post("/api/create-game/directions", { map, rounds });
         if (response.data.code !== 1) {
             setErr("Error Creating Game");
             return;
         }
         console.log(response.data.locations);
         const seconds = rawTimer < 60 ? rawTimer : 60 + Math.floor((rawTimer - 60) / 10) * 60;
-        sessionStorage.setItem("gameState", JSON.stringify({round: 0, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, startingDistance, currTargetLocation: null, currLocation: null, finishedRound: false, failed: false, results: []}));
+        sessionStorage.setItem("gameState", JSON.stringify({round: 0, totalRounds: rounds, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, startingDistance, currTargetLocation: null, currLocation: null, finishedRound: false, failed: false, results: []}));
         navigate("/play/directions");
     };
 
@@ -79,17 +84,17 @@ const Directions = () => {
                 <button className="text-2xl w-32 mb-40 border rounded bg-gray-200" onClick={startDirectionsGame}>Start</button>
                 {err && (<p>{err}</p>)}
                 <div className="flex mb-32 w-full h-1/4">
-                    <div className="flex space-x-4 w-1/3 justify-center items-center">
+                    <div className="flex space-x-4 w-1/4 justify-center items-center">
                         <label for="distance" className="text-center">Starting Distance <br></br> In meters</label>
                         <input id="distance" type="range" min="200" max="1000" defaultValue="200" value={startingDistance} className="" onChange={(e) => {setStartingDistance(e.target.value)}}></input>
                         <input type="number" placeholder="200" min="200" max="1000" defaultValue="200" value={startingDistance} onChange={(e) => {setStartingDistance(e.target.value)}} className="border border-rounded border-2"></input>
                     </div>
-                    <div className="flex space-x-4 w-1/3 justify-center items-center">
+                    <div className="flex space-x-4 w-1/4 justify-center items-center">
                         <label for="time" className="text-center">Timer</label>
                         <input id="time" type="range" min="10" max="150" defaultValue="80" value={rawTimer} className="" onChange={(e) => {handleTimerSlideConversion(e.target.value)}}></input>
                         <div className="border border-rounded border-2 overflow-hidden w-20 h-30">{timer}</div>
                     </div>
-                    <div className="flex space-x-4 w-1/3 justify-center items-center">
+                    <div className="flex space-x-4 w-1/4 justify-center items-center">
                         <label for="map" className="text-center">Map Select</label>
                         <select id="map" className="border border-rounded border-2" onChange={(e) => {setMap(e.target.value)}}>
                             <option key="base" value={"Random"}>Random</option>
@@ -99,6 +104,11 @@ const Directions = () => {
                                 </option>
                             ))}
                         </select>
+                    </div>
+                    <div className="flex space-x-4 w-1/4 justify-center items-center">
+                        <label for="time" className="text-center">Rounds</label>
+                        <input id="time" type="range" min="1" max="10" defaultValue="3" value={rounds} className="" onChange={(e) => {setRounds(e.target.value)}}></input>
+                        <div className="border border-rounded border-2 overflow-hidden w-8 h-30">{rounds}</div>
                     </div>
                 </div>
             </div>

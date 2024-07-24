@@ -8,6 +8,7 @@ const DirectionsGame = () => {
         return JSON.parse(sessionStorage.getItem("gameState")).roundTimer;
     });
     const [round, setRound] = useState(1);
+    const totalRounds = JSON.parse(sessionStorage.getItem("gameState")).totalRounds;
 
     const intervalRef = useRef(null); 
 
@@ -100,7 +101,7 @@ const DirectionsGame = () => {
     const generateRound = () => {
         updateGameRoundResults();
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
-        if (gameState.round >= 3) {
+        if (gameState.round >= parseInt(gameState.totalRounds, 10)) {
             console.log("Game End.");
             handleGameEnd();
             return;
@@ -217,7 +218,7 @@ const DirectionsGame = () => {
                 {currMap && currTarget && (<p>You are in {currMap}! Make your way to the {currTarget} within the time limit</p>)}
             </div>
             <div className="flex w-1/3 justify-between items-center">
-                {round && (<div className="border rounded border-4 float-left">Round: {round}</div>)}
+                {round && (<div className="border rounded border-4 float-left">Round: {round} / {totalRounds}</div>)}
                 {(timer !== null) && (<div className="border rounded border-4">Timer: {timer} seconds left</div>)}
             </div>
         </div>

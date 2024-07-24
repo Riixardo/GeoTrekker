@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import HomeNavbar from '../HomeNavbar';
 import Button from '../PageButton';
 import ProfileButton from '../ProfileButton';
 import HomeBackground from '../HomeBackground';
+import LoggedInContext from '../../contexts/LoggedInContext';
 
 const Home = () => {
 
-    const [loggedIn, setLoggedIn] = useState(false);
+  const { loggedIn } = useContext(LoggedInContext);
 
-    useEffect(() => {
-        if (sessionStorage.getItem('token')) {
-            setLoggedIn(true);
-        }
-    }, []); 
+    // useEffect(() => {
+    //     if (sessionStorage.getItem("token")) {
+    //         setLoggedIn(true);
+    //     }
+    // }, []); 
 
     return (
       <div className="relative flex flex-col min-h-screen z-10">
