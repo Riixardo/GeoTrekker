@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../PageButton';
 import axios from 'axios';
+import LoggedInContext from '../../contexts/LoggedInContext';
 
 const Login = () => {
+
+    const { setLoggedIn } = useContext(LoggedInContext);
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -19,7 +22,7 @@ const Login = () => {
         try {
             const response = await axios.post("/api/login", { email, password });
             if (response.data.code === 1) {
-                console.log("Data made it LOLwdwd");
+                setLoggedIn(true);
                 sessionStorage.setItem('token', response.data.token);
                 sessionStorage.setItem('userData', JSON.stringify(response.data.userData));
                 navigate("/");

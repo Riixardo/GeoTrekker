@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../PageButton';
+import axios from "axios";
+import LoggedInContext from '../../contexts/LoggedInContext';
 
 const Profile = () => {
+
+    const { setLoggedIn } = useContext(LoggedInContext);
 
     const [username, setUsername] = useState("");
 
@@ -14,8 +18,16 @@ const Profile = () => {
         setUsername(userData.user);
     }, [])
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        const response = await axios.post("/api/logout", { token: sessionStorage.getItem("token") });
+        if (response.data.code === 1) {
+            console.log("Successful logout");
+        }
+        else {
+            console.log("Error logging out");
+        }
         sessionStorage.clear();
+        setLoggedIn(false);
         navigate("/");
     }
 

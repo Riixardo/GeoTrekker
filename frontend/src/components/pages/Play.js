@@ -17,7 +17,7 @@ const Play = () => {
     const navigate = useNavigate();
 
     const handleDirectionsClick = () => {
-        navigate("/play/directions");
+        navigate("/games/directions");
     }
 
     return (
