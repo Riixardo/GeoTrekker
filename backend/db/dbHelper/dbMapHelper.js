@@ -1,9 +1,15 @@
 /**
- * Database helper file. Run this file to efficiently add and remove from the database
+ * @module dbMapHelper
+ * 
+ * @description This file contains helper functions for interacting with the map and location tables. Run this file for a CLI. 
+ * 
+ * @version 1.0.0
+ * @date 2024-07-25
+ * @author Richard Chen
  */
 
 
-const pool = require('./pool');
+const pool = require('../pool');
 const readline = require('readline');
 
 const rl = readline.createInterface({
@@ -17,6 +23,19 @@ const prompt = async (query) => {
     });
 }
 
+/**
+ * Inserts a directions mode location and specified a relationship with the given directions mode map
+ * 
+ * @async
+ * @function insertDirectionsLocation
+ * @param {number} mapID the map_id of the map of this location
+ * @param {number} lat the latitude
+ * @param {number} lng the longitude
+ * @param {string} name the name of the location
+ * @param {number} from randomized starting locations will generate in the heading range of [from, to]. The range is 0-360 and goes clockwise from North.
+ * @param {number} to randomized starting locations will generate in the heading range of [from, to]. The range is 0-360 and goes clockwise from North.
+ * @returns {void}
+ */
 const insertDirectionsLocation = async ({mapID, lat, lng, name, from, to}) => {
     try {
         const client = await pool.connect();
@@ -34,6 +53,16 @@ const insertDirectionsLocation = async ({mapID, lat, lng, name, from, to}) => {
     }
 }
 
+/**
+ * Inserts a classic mode location and specified a relationship with the given classic mode map
+ * 
+ * @async
+ * @function insertClassicLocation 
+ * @param {number} mapID the map_id of the map of this location
+ * @param {number} lat the latitude
+ * @param {number} lng the longitude
+ * @returns {void}
+ */
 const insertClassicLocation = async ({mapID, lat, lng}) => {
     try {
         const client = await pool.connect();

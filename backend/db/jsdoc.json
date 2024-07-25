@@ -1,0 +1,20 @@
+{
+    "source": {
+        "include": ["dbHelper"], 
+        "exclude": ["node_modules"]
+    },
+    "groups": {
+      "modules": {
+        "title": "Modules",
+        "order": 1
+      },
+      "files": {
+        "title": "Files",
+        "order": 2
+      }
+    },
+    "opts": {
+        "destination": "docs", 
+        "recurse": true
+    }
+}
