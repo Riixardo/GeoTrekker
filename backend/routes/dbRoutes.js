@@ -2,7 +2,9 @@ const express = require("express");
 const router = express.Router();
 const dbController = require('../controllers/dbController');
 
-router.get("/api/db/maps", dbController.getMaps);
+router.get("/api/db/directions-maps", dbController.getDirectionsMaps);
+
+router.get("/api/db/classic-maps", dbController.getClassicMaps);
 
 router.post("/api/login", dbController.handleLogin);
 

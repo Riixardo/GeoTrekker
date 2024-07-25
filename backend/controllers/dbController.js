@@ -4,10 +4,11 @@ const pool = require('../db/pool');
 const crypto = require('crypto');
 
 // code 1 = success, code 2 = error occured
-const getMaps = async (req, res) => {
+const getDirectionsMaps = async (req, res) => {
     try {
         const client = await pool.connect();
-        const result = await client.query("SELECT map_name FROM maps");
+        await client.query("SET search_path TO GeoTrekker");
+        const result = await client.query("SELECT map_name FROM directions_maps");
         if (result.rows == 0) {
             res.json({code: 2})
             client.release();
@@ -21,6 +22,26 @@ const getMaps = async (req, res) => {
     }
 }
 
+// code 1 = success, code 2 = error occured
+const getClassicMaps = async (req, res) => {
+    try {
+        const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
+        const result = await client.query("SELECT map_name FROM classic_maps");
+        if (result.rows == 0) {
+            res.json({code: 2})
+            client.release();
+            return;
+        }
+        res.json({code: 1, maps: result.rows});
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+
 // code 1 = success, code 2 = invalid password, code 3 = no account found, code 4 = other error
 const handleLogin = async (req, res) => {
     
@@ -29,6 +50,7 @@ const handleLogin = async (req, res) => {
     
     try {
         const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
         const result = await client.query("SELECT * FROM users WHERE email = $1", [lowercase_email]);
         if (result.rows.length == 1 && result.rows[0].password == password) {
             const user = result.rows[0].username;
@@ -65,6 +87,7 @@ const handleSignup = async (req, res) => {
 
     try {
         const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
         const result = await client.query("SELECT * FROM users WHERE email = $1", [lowercase_email]);
         if (result.rows.length == 0) {
 
@@ -98,14 +121,25 @@ const createDirectionsGame = async (req, res) => {
 
     try {
         const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
         let result;
         if (map == "Random") {
-            result = await client.query("SELECT location_name, latitude, longitude, map_name, heading_from, heading_to FROM maps JOIN locations ON map_id = map ORDER BY RANDOM() LIMIT $1", [rounds]);
+            const query = "SELECT location_name, latitude, longitude, map_name, heading_from, heading_to \
+            FROM directions_maps \
+            JOIN directions_map_location ON map_id = map \
+            JOIN directions_locations ON location = location_id \
+            ORDER BY RANDOM() LIMIT $1"
+            result = await client.query(query, [rounds]);
             console.log(result.rows);
         }
         else {
-            result = await client.query("SELECT location_name, latitude, longitude, map_name, heading_from, heading_to FROM maps JOIN locations ON map_id = map WHERE map_name = $1 ORDER BY "
-                + "RANDOM() LIMIT $2", [map, rounds]);
+            const query = "SELECT location_name, latitude, longitude, map_name, heading_from, heading_to \
+            FROM directions_maps \
+            JOIN directions_map_location ON map_id = map \
+            JOIN directions_locations ON location = location_id \
+            WHERE map_name = $1 \
+            ORDER BY RANDOM() LIMIT $2"
+            result = await client.query(query, [map, rounds]);
             console.log(result.rows);
         }
         if (result.rows.length == rounds) {
@@ -131,6 +165,7 @@ const handleLogout = async (req, res) => {
     
     try {
         const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
         const result = await client.query("DELETE FROM sessions WHERE session_id = $1 RETURNING *", [token]);
         if (result.rows.length > 0) {
             res.json({code: 1});
@@ -152,6 +187,7 @@ const resumeSession = async (req, res) => {
     
     try {
         const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
         const result = await client.query("INSERT INTO sessions VALUES ($1, $2) RETURNING *", [token, user_id]);
         if (result.rows.length > 0) {
             res.json({code: 1});
@@ -169,10 +205,11 @@ const resumeSession = async (req, res) => {
 }
 
 module.exports = {
-    getMaps,
+    getDirectionsMaps,
     handleLogin,
     handleSignup,
     createDirectionsGame,
     handleLogout,
-    resumeSession
+    resumeSession,
+    getClassicMaps
 }

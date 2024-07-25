@@ -21,7 +21,6 @@ const DirectionsGame = () => {
     const navigate = useNavigate();
 
     const handleGameEnd = () => {
-        console.log("LOLLSSS");
         navigate("/play/directions/endscreen");
     }
 
@@ -43,7 +42,6 @@ const DirectionsGame = () => {
                 setNextRoundPopup(true);
                 gameStateAlter.finishedRound = true;
                 clearInterval(intervalRef.current);
-                //alert('You have found supplies!');
             }
             sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
         });
