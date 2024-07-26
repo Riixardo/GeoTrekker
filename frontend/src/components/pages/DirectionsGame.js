@@ -91,6 +91,13 @@ const DirectionsGame = () => {
         
         panorama.setVisible(true);
         if (gameState.finishedRound) {
+            panorama.setOptions({
+                panControl: false,
+                zoomControl: false,
+                scrollwheel: false,
+                clickToGo: false,
+                disableDefaultUI: true
+            });
             return;
         }
         addPanoramaPositionListener(panorama);

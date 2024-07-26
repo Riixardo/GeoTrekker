@@ -1,6 +1,4 @@
 const pool = require('../db/pool');
-
-// just for testing
 const crypto = require('crypto');
 
 // code 1 = success, code 2 = error occured
@@ -54,6 +52,7 @@ const handleLogin = async (req, res) => {
         const result = await client.query("SELECT * FROM users WHERE email = $1", [lowercase_email]);
         if (result.rows.length == 1 && result.rows[0].password == password) {
             const user = result.rows[0].username;
+            // identifies a current session
             const token = crypto.randomBytes(32).toString("hex");
             const user_id = result.rows[0].id;
             const insert_result = await client.query("INSERT INTO sessions VALUES ($1, $2) RETURNING *", [token, user_id]);
@@ -117,7 +116,6 @@ const createDirectionsGame = async (req, res) => {
 
     const map = req.body.map;
     const rounds = parseInt(req.body.rounds, 10);
-    console.log(rounds);
 
     try {
         const client = await pool.connect();
@@ -137,6 +135,50 @@ const createDirectionsGame = async (req, res) => {
             FROM directions_maps \
             JOIN directions_map_location ON map_id = map \
             JOIN directions_locations ON location = location_id \
+            WHERE map_name = $1 \
+            ORDER BY RANDOM() LIMIT $2"
+            result = await client.query(query, [map, rounds]);
+            console.log(result.rows);
+        }
+        if (result.rows.length == rounds) {
+            res.json({code: 1, locations: result.rows});
+        } 
+        else {
+            let i = 0;
+            while (result.rows.length < rounds) {
+                result.rows.push(result.rows[i]);
+                i++;
+            }
+            res.json({code: 1, locations: result.rows});
+        }
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+const createClassicGame = async (req, res) => {
+
+    const map = req.body.map;
+    const rounds = parseInt(req.body.rounds, 10);
+
+    try {
+        const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
+        let result;
+        if (map == "World") {
+            const query = "SELECT latitude AS lat, longitude AS lng \
+            FROM classic_locations \
+            ORDER BY RANDOM() LIMIT $1"
+            result = await client.query(query, [rounds]);
+            console.log(result.rows);
+        }
+        else {
+            const query = "SELECT latitude AS lat, longitude AS lng\
+            FROM classic_maps \
+            JOIN classic_map_location ON map_id = map \
+            JOIN classic_locations ON location = location_id \
             WHERE map_name = $1 \
             ORDER BY RANDOM() LIMIT $2"
             result = await client.query(query, [map, rounds]);
@@ -211,5 +253,6 @@ module.exports = {
     createDirectionsGame,
     handleLogout,
     resumeSession,
-    getClassicMaps
+    getClassicMaps,
+    createClassicGame
 }

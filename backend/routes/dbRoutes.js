@@ -12,6 +12,8 @@ router.post("/api/signup", dbController.handleSignup);
 
 router.post("/api/create-game/directions", dbController.createDirectionsGame);
 
+router.post("/api/create-game/classic", dbController.createClassicGame);
+
 router.post("/api/logout", dbController.handleLogout);
 
 router.post("/api/resume-session", dbController.resumeSession);
