@@ -34,10 +34,10 @@ const Classic = () => {
     const navigate = useNavigate();
 
     const startClassicGame = async () => {
-        // if (!loggedIn) {
-        //     alert("You must be logged in to play");
-        //     return;
-        // }
+        if (!loggedIn) {
+            alert("You must be logged in to play");
+            return;
+        }
         const response = await axios.post("/api/create-game/classic", { map, rounds });
         if (response.data.code !== 1) {
             setErr("Error Creating Game");
@@ -45,7 +45,7 @@ const Classic = () => {
         }
         console.log(response.data.locations);
         const seconds = rawTimer < 60 ? rawTimer : 60 + Math.floor((rawTimer - 60) / 10) * 60;
-        sessionStorage.setItem("gameState", JSON.stringify({round: 0, totalRounds: rounds, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, currLocation: null, finishedRound: false, failed: false, results: []}));
+        sessionStorage.setItem("gameState", JSON.stringify({round: 0, totalRounds: rounds, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, currLocation: null, guessLocation: null, finishedRound: false, failed: false, results: []}));
         navigate("/play/classic");
     };
 
