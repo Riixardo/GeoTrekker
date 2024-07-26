@@ -15,23 +15,68 @@ const ClassicGame = () => {
     const [timeoutPopup, setTimeoutPopup] = useState(false);
 
     const [loadMiniMapExpander, setLoadMiniMapExpander] = useState(false);
-    const [miniMapSize, setMiniMapSize] = useState(1);
+    const [miniMapSize, setMiniMapSize] = useState({width: 376, height: 240});
 
     const navigate = useNavigate();
+
+    let mapMarker = null;
 
     const handleGameEnd = () => {
         navigate("/play/classic/endscreen");
     }
 
-    const expandMiniMapSize = () => { setMiniMapSize((prevSize) => {return prevSize + 0.3})} ;
+    const expandMiniMapSize = () => { 
+        setMiniMapSize((prevSize) => {
+            const newWidth = Math.floor(prevSize.width * 1.5);
+            const newHeight = Math.floor(prevSize.height * 1.5);
+            setMiniMapSize({width: newWidth, height: newHeight});
+        });
+    }
 
     const addPanoramaPositionListener = (panorama) => {
-        panorama.addListener('position_changed', () => {
+        panorama.addListener("position_changed", () => {
             const currentPosition = panorama.getPosition();
             const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
             gameStateAlter.currLocation = currentPosition;
             sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
         });
+    }
+
+    const addMapPositionListener = (map) => {
+        map.addListener("click", (event) => {
+            if (mapMarker) {
+                mapMarker.setMap(null);
+            }
+            mapMarker = new window.google.maps.Marker({
+                position: event.latLng,
+                map: map,
+            });
+            const gameStateAlter = JSON.parse(sessionStorage.getItem("gameState"));
+            gameStateAlter.guessLocation = event.latLng;
+            sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
+        });
+    }
+
+    const addPanAndMap = (panOptions) => {
+        const panorama = new window.google.maps.StreetViewPanorama(document.getElementById('map'), panOptions);
+        panorama.setVisible(true);
+        panorama.setOptions({
+            disableDefaultUI: true,
+            clickToGo: true,        
+            linksControl: true
+        })
+        addPanoramaPositionListener(panorama);
+
+        const mapOptions = {
+            center: {lat:0, lng:0}, 
+            zoom: 2,
+            disableDefaultUI: true,
+            zoomControl: true,
+            draggableCursor: 'default', // Change the cursor to default
+        };
+
+        const map = new window.google.maps.Map(document.getElementById("mini-map"), mapOptions);
+        addMapPositionListener(map);
     }
 
     const startCountdown = () => {
@@ -76,28 +121,7 @@ const ClassicGame = () => {
             position: gameState.currLocation, 
             pov: { heading: 270, pitch: 0 }
         }
-        const panorama = new window.google.maps.StreetViewPanorama(document.getElementById('map'), panoramaOptions);
-        
-        panorama.setVisible(true);
-        panorama.setOptions({
-            disableDefaultUI: true,
-            clickToGo: true,        
-            linksControl: true
-        })
-        const mapOptions = {
-            center: {lat:0, lng:0}, 
-            zoom: 2,
-            disableDefaultUI: true,
-            zoomControl: true,
-            draggableCursor: 'default', // Change the cursor to default
-        };
-
-        const map = new window.google.maps.Map(document.getElementById("mini-map"), mapOptions);
-
-        map.addListener('click', (event) => {
-            const clickedLocation = event.latLng;
-            console.log('Clicked location:', clickedLocation.toString());
-        });
+        addPanAndMap(panoramaOptions);
     }
 
     const generateRound = () => {
@@ -125,29 +149,8 @@ const ClassicGame = () => {
             position: targetLocation, 
             pov: { heading: 270, pitch: 0 }
         }
-        
-        const panorama = new window.google.maps.StreetViewPanorama(document.getElementById('map'), panoramaOptions);
-        panorama.setVisible(true);
-        panorama.setOptions({
-            disableDefaultUI: true,
-            clickToGo: true,        
-            linksControl: true
-        })
-        addPanoramaPositionListener(panorama);
 
-        const mapOptions = {
-            center: {lat:0, lng:0}, 
-            zoom: 2,
-            disableDefaultUI: true,
-            zoomControl: true,
-            draggableCursor: 'default', // Change the cursor to default
-        };
-
-        const map = new window.google.maps.Map(document.getElementById("mini-map"), mapOptions);
-        map.addListener('click', (event) => {
-            const clickedLocation = event.latLng;
-            console.log('Clicked location:', clickedLocation.toString());
-        });
+        addPanAndMap(panoramaOptions);
 
         sessionStorage.setItem("gameState", JSON.stringify(gameState));
     }
@@ -213,10 +216,11 @@ const ClassicGame = () => {
             {timeoutPopup && (<Popup text="You ran out of time!" buttonText="End" onClick={handleGameEnd}></Popup>)}
             <div id="map" className="relative h-full w-full z-10"> 
             </div>
-            <div id="mini-map" className="absolute w-96 h-60 z-50 bottom-2 right-2 transform transition-transform duration-100 origin-bottom-right cursor-default hover:cursor-default" style={{ transform: `scale(${miniMapSize})` }} onMouseEnter={expandMiniMapSize} onMouseLeave={() => setMiniMapSize(1)}>
+            {miniMapSize && (<div id="mini-map" className="absolute z-50 bottom-10 right-2 transform transition-transform duration-100 origin-bottom-right cursor-default hover:cursor-default border border-2 border-gray-500" style={{ width: miniMapSize.width || 376, height: miniMapSize.height || 240 }} onMouseEnter={expandMiniMapSize} onMouseLeave={() => setMiniMapSize({width: 376, height: 240})}>
                 {loadMiniMapExpander && (<div className="absolute w-8 h-8 bg-blue-500 cursor-pointer z-60" onClick={expandMiniMapSize}>
                 </div>)}
-            </div>
+                {loadMiniMapExpander && (<button className="absolute z-60 w-24 h-8 bottom-2 left-1/2 transform -translate-x-1/2 bg-green-400 border border-1 border-black">Enter</button>)}
+            </div>)}
         </div>
       </div>
     );
