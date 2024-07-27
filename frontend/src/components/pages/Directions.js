@@ -17,11 +17,11 @@ const Directions = () => {
     const [err, setErr] = useState("");
 
     useEffect(() => {
-        if (sessionStorage.getItem('token')) {
+        if (sessionStorage.getItem("token")) {
             setLoggedIn(true);
         }
         const fetchMaps = async () => {
-            const response = await axios.get("/api/db/maps");
+            const response = await axios.get("/api/db/directions-maps");
             if (response.data.code === 1) {
                 setMapOptions(response.data.maps);
             }

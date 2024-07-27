@@ -20,6 +20,10 @@ const Play = () => {
         navigate("/games/directions");
     }
 
+    const handleClassicClick = () => {
+        navigate("/games/classic");
+    }
+
     return (
         <div className="flex flex-col items-center font-orbitron">
             <div className="w-full mb-10">  
@@ -42,7 +46,8 @@ const Play = () => {
                 <h2 className="text-2xl font-orbitron font-bold">Game Modes</h2>
                 <div className="flex items-center space-x-8">
                     <ImageButton img="/directions.jpg" alt="Play Directions" className="h-24 w-24 border-4 rounded hover:scale-110" onClick={handleDirectionsClick}></ImageButton>
-                    <ImageButton img="/globe.png" alt="Play Classic" className="h-24 w-24 border-4 rounded hover:scale-110"></ImageButton>
+                    <ImageButton img="/globe.png" alt="Play Classic" className="h-24 w-24 border-4 rounded hover:scale-110"
+                    onClick={handleClassicClick}></ImageButton>
                 </div>
             </div>
         </div>

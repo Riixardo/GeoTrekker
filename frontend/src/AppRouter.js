@@ -9,6 +9,9 @@ import Signup from './components/pages/Signup';
 import Profile from './components/pages/Profile';
 import Directions from './components/pages/Directions';
 import DirectionsGameEnd from './components/pages/DirectionsGameEnd';
+import Classic from './components/pages/Classic';
+import ClassicGame from './components/pages/ClassicGame';
+import ClassicGameEnd from './components/pages/ClassicGameEnd';
 
 const App = () => {
   return (
@@ -23,6 +26,9 @@ const App = () => {
         <Route path="/games/directions" element={<Directions />} />
         <Route path="/play/directions" element={<DirectionsGame />} />
         <Route path="/play/directions/endscreen" element={<DirectionsGameEnd />} />
+        <Route path="/games/classic" element={<Classic />} />
+        <Route path="/play/classic" element={<ClassicGame />} />
+        <Route path="/play/classic/endscreen" element={<ClassicGameEnd />} />
       </Routes>
     </Router>
   );

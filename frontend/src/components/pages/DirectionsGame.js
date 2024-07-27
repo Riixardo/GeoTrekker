@@ -21,7 +21,6 @@ const DirectionsGame = () => {
     const navigate = useNavigate();
 
     const handleGameEnd = () => {
-        console.log("LOLLSSS");
         navigate("/play/directions/endscreen");
     }
 
@@ -43,7 +42,6 @@ const DirectionsGame = () => {
                 setNextRoundPopup(true);
                 gameStateAlter.finishedRound = true;
                 clearInterval(intervalRef.current);
-                //alert('You have found supplies!');
             }
             sessionStorage.setItem("gameState", JSON.stringify(gameStateAlter));
         });
@@ -93,6 +91,13 @@ const DirectionsGame = () => {
         
         panorama.setVisible(true);
         if (gameState.finishedRound) {
+            panorama.setOptions({
+                panControl: false,
+                zoomControl: false,
+                scrollwheel: false,
+                clickToGo: false,
+                disableDefaultUI: true
+            });
             return;
         }
         addPanoramaPositionListener(panorama);
