@@ -25,7 +25,7 @@ const getClassicMaps = async (req, res) => {
     try {
         const client = await pool.connect();
         await client.query("SET search_path TO GeoTrekker");
-        const result = await client.query("SELECT map_name FROM classic_maps");
+        const result = await client.query("SELECT map_name FROM classic_maps ORDER BY map_id ASC");
         if (result.rows == 0) {
             res.json({code: 2})
             client.release();
@@ -268,12 +268,13 @@ const postClassicGame = async (req, res) => {
 }
 
 const getTopTenClassicGamesLB = async (req, res) => {
+    const map_name = req.body.map;
     try {
         const client = await pool.connect();
         await client.query("SET search_path TO GeoTrekker");
-        const result = await client.query("SELECT username, score FROM users JOIN classic_games ON users.user_id = classic_games.user_id WHERE rounds = 5 AND timer = 180 ORDER BY score DESC LIMIT 10");
+        const result = await client.query("SELECT username, score FROM users JOIN classic_games ON id = user_id WHERE rounds = 5 AND timer = 180 AND map = $1 ORDER BY score DESC LIMIT 10", [map_name]);
         if (result.rows.length > 0) {
-            res.json({code: 1});
+            res.json({code: 1, games: result.rows});
         } 
         else {
             console.log("Insertion failed");

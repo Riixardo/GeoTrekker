@@ -91,7 +91,9 @@ const main = async() => {
             await insertDirectionsLocation(parsedParams);
         }
         else if (response == "2") {
-            await insertClassicLocation(parsedParams);
+            for (let i = 0; i < parsedParams.length; i++) {
+                await insertClassicLocation(parsedParams[i]);
+            }
         }
     }
 }
