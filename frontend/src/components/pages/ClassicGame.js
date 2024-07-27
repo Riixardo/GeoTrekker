@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Popup from '../Popup';
+import ImageButton from '../ImageButton';
 
 const ClassicGame = () => {
 
@@ -15,7 +16,7 @@ const ClassicGame = () => {
     const [timeoutPopup, setTimeoutPopup] = useState(false);
 
     const [loadMiniMapExpander, setLoadMiniMapExpander] = useState(false);
-    const [miniMapSize, setMiniMapSize] = useState(null);
+    const [miniMapSize, setMiniMapSize] = useState({width: 376, height: 240});
 
     const [roundFinished, setRoundFinished] = useState(false);
     const [roundJustStarted, setRoundJustStarted] = useState(false);
@@ -81,6 +82,7 @@ const ClassicGame = () => {
             zoom: 2,
             disableDefaultUI: true,
             zoomControl: true,
+            clickableIcons: false,
             draggableCursor: 'default', // Change the cursor to default
         };
 
@@ -118,6 +120,7 @@ const ClassicGame = () => {
         sessionStorage.setItem("gameState", JSON.stringify(gameState));
     }
 
+    // Renders the page based on saved game state
     const reRenderRoundOnRefresh = () => {
 
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
@@ -135,6 +138,7 @@ const ClassicGame = () => {
         addPanAndMap(panoramaOptions);
     }
 
+    // generates the next round, or the endscreen if last round
     const generateRound = () => {
         updateGameRoundResults();
         const gameState = JSON.parse(sessionStorage.getItem("gameState"));
@@ -189,13 +193,16 @@ const ClassicGame = () => {
             const gameState = JSON.parse(sessionStorage.getItem("gameState"));
             gameState.finishedRound = true;
             clearInterval(intervalRef.current);
+            // setting this here so that the enter button and mini map expander load after the map
             setLoadMiniMapExpander(false);
+            setMiniMapSize({width: 376, height: 240});
     
             const mapOptions = {
                 center: {lat:0, lng:0}, 
                 zoom: 2,
                 disableDefaultUI: true,
                 zoomControl: true,
+                clickableIcons: false, 
                 draggableCursor: 'default', // Change the cursor to default
             };
     
@@ -226,8 +233,6 @@ const ClassicGame = () => {
             console.log("2 seconds are over");
 
             const gameState = JSON.parse(sessionStorage.getItem("gameState"));
-
-            setMiniMapSize({width: 376, height: 240});
 
             if (gameState.currTimer !== null) {
                 setTimer(gameState.currTimer);
@@ -276,11 +281,10 @@ const ClassicGame = () => {
         {!roundFinished && (<div className="relative h-7/8 w-full flex justify-center">
             {timeoutPopup && (<Popup text="You ran out of time!" buttonText="End" onClick={handleGameEnd}></Popup>)}
             <div id="map" className="relative h-full w-full z-10"> 
-                {/* {loadMiniMapExpander && (<button className="relative z-60 w-24 h-8 bottom-2, left-2 border border-2 bg-green-400" onClick={() => {setRoundFinished(true)}}>Enter</button>)} */}
             </div>
             {miniMapSize && (<div id="mini-map" className="absolute z-50 bottom-10 right-2 transform transition-transform duration-100 origin-bottom-right cursor-default hover:cursor-default border border-2 border-gray-500" style={{ width: miniMapSize.width || 376, height: miniMapSize.height || 240 }} onMouseEnter={expandMiniMapSize} onMouseLeave={() => setMiniMapSize({width: 376, height: 240})}>
-                {loadMiniMapExpander && (<div className="absolute w-8 h-8 bg-blue-500 cursor-pointer z-60" onClick={expandMiniMapSize}>
-                </div>)}
+                {loadMiniMapExpander && (<ImageButton img="/arrow_topleft.png" alt="Mini Map Expander" className="absolute w-8 h-8 cursor-pointer z-60" onClick={expandMiniMapSize}></ImageButton>)}
+                {/* {loadMiniMapExpander && (<div className="absolute w-8 h-8 bg-blue-500 cursor-pointer z-60" onClick={expandMiniMapSize}></div>)} */}
                 {loadMiniMapExpander && (<button className="absolute z-60 w-24 h-8 bottom-2 left-1/2 transform -translate-x-1/2 bg-green-400 border border-1 border-black" onClick={() => {setRoundFinished(true)}}>Enter</button>)}
             </div>)}
         </div>)}

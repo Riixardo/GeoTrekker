@@ -9,7 +9,7 @@ const DirectionsGameEnd = () => {
     const loadMap = () => {
         const map = new window.google.maps.Map(document.getElementById("map"), {
             zoom: 2,
-            center: {lat:0, lng:0}
+            center: {lat:0, lng:0},
         });
         for (let i = 0; i < results.length; i++) {
             new window.google.maps.Marker({

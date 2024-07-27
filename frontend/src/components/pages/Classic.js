@@ -45,7 +45,7 @@ const Classic = () => {
         }
         console.log(response.data.locations);
         const seconds = rawTimer < 60 ? rawTimer : 60 + Math.floor((rawTimer - 60) / 10) * 60;
-        sessionStorage.setItem("gameState", JSON.stringify({round: 0, totalRounds: rounds, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, currLocation: null, guessLocation: null, finishedRound: false, failed: false, results: []}));
+        sessionStorage.setItem("gameState", JSON.stringify({round: 0, totalRounds: rounds, started: false, locations: response.data.locations, roundTimer: seconds, currTimer: null, currLocation: null, guessLocation: null, finishedRound: false, failed: false, map, results: []}));
         navigate("/play/classic");
     };
 

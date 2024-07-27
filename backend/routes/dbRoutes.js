@@ -18,4 +18,8 @@ router.post("/api/logout", dbController.handleLogout);
 
 router.post("/api/resume-session", dbController.resumeSession);
 
+router.post("/api/post/classic-game", dbController.postClassicGame);
+
+router.get("/api/db/classic-games-lb", dbController.getTopTenClassicGamesLB);
+
 module.exports = router;
