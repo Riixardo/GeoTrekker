@@ -20,6 +20,8 @@ const DirectionsGame = () => {
 
     const navigate = useNavigate();
 
+    let panorama;
+
     const handleGameEnd = () => {
         navigate("/play/directions/endscreen");
     }
@@ -57,6 +59,13 @@ const DirectionsGame = () => {
                     gameState.failed = true;
                     sessionStorage.setItem("gameState", JSON.stringify(gameState));
                     setTimeoutPopup(true);
+                    panorama.setOptions({
+                        panControl: false,
+                        zoomControl: false,
+                        scrollwheel: false,
+                        clickToGo: false,
+                        disableDefaultUI: true
+                    });
                     return prevTimer;
                 }
                 console.log(prevTimer);
@@ -86,7 +95,7 @@ const DirectionsGame = () => {
             startCountdown();
         }
         setRound(gameState.round);
-        const panorama = new window.google.maps.StreetViewPanorama(
+        panorama = new window.google.maps.StreetViewPanorama(
             document.getElementById('map'), { position: gameState.currLocation, pov: { heading: 270, pitch: 0 } });
         
         panorama.setVisible(true);
@@ -150,7 +159,7 @@ const DirectionsGame = () => {
             const tempStartingPosition = window.google.maps.geometry.spherical.computeOffset(targetLocation, gameState.startingDistance, heading);
             streetViewService.getPanorama({ location: tempStartingPosition, radius: 15, source: window.google.maps.StreetViewSource.OUTDOOR}, (data, status) => {
                 if (status === window.google.maps.StreetViewStatus.OK) {
-                    const panorama = new window.google.maps.StreetViewPanorama(
+                    panorama = new window.google.maps.StreetViewPanorama(
                         document.getElementById('map')
                     );
                     panorama.setPano(data.location.pano);

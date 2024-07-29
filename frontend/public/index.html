@@ -34,19 +34,15 @@
     <script src="/apiConfig.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function() {
-        // Define your variable
+
         console.log(API_KEY);
 
-        // Create a new script element
         const script = document.createElement("script");
 
-        // Set the src attribute by concatenating strings
         script.src = "https://maps.googleapis.com/maps/api/js?key=" + API_KEY + "&loading=async&callback=initMap&libraries=maps,streetView,geometry";
 
-        // Set the async attribute to load the script asynchronously
         script.async = true;
 
-        // Append the script element to the head or body
         document.head.appendChild(script);
       });
     </script>

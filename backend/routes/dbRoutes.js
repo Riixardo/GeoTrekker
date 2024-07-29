@@ -22,4 +22,8 @@ router.post("/api/post/classic-game", dbController.postClassicGame);
 
 router.post("/api/db/classic-games-lb", dbController.getTopTenClassicGamesLB);
 
+router.post("/api/post/directions-game", dbController.postDirectionsGame);
+
+router.post("/api/db/directions-games-lb", dbController.getTopTenDirectionsGamesLB);
+
 module.exports = router;
