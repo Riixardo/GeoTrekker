@@ -247,7 +247,6 @@ const resumeSession = async (req, res) => {
 }
 
 const postClassicGame = async (req, res) => {
-    console.log("Body: " + req.body);
     const { user_id, rounds, timer, score, map } = req.body;
     try {
         const client = await pool.connect();
@@ -287,6 +286,46 @@ const getTopTenClassicGamesLB = async (req, res) => {
     }
 }
 
+const postDirectionsGame = async (req, res) => {
+    const { user_id, rounds, timer, startingDistance, score, map } = req.body;
+    try {
+        const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
+        const result = await client.query("INSERT INTO directions_games(user_id, rounds, timer, starting_distance, score, map) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *", [user_id, rounds, timer, startingDistance, score, map]);
+        if (result.rows.length > 0) {
+            res.json({code: 1});
+        } 
+        else {
+            console.log("Insertion failed");
+            res.json({code: 2});
+        }
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+const getTopTenDirectionsGamesLB = async (req, res) => {
+    const map_name = req.body.map;
+    try {
+        const client = await pool.connect();
+        await client.query("SET search_path TO GeoTrekker");
+        const result = await client.query("SELECT username, score FROM users JOIN directions_games ON id = user_id WHERE rounds = 3 AND timer = 180 AND map = $1 AND starting_distance = 500 ORDER BY score DESC LIMIT 10", [map_name]);
+        if (result.rows.length > 0) {
+            res.json({code: 1, games: result.rows});
+        } 
+        else {
+            console.log("Insertion failed");
+            res.json({code: 2});
+        }
+        client.release();
+    } catch (err) {
+        console.error("Error fetching message", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
 
 module.exports = {
     getDirectionsMaps,
@@ -298,5 +337,7 @@ module.exports = {
     getClassicMaps,
     createClassicGame,
     postClassicGame,
-    getTopTenClassicGamesLB
+    getTopTenClassicGamesLB,
+    postDirectionsGame,
+    getTopTenDirectionsGamesLB
 }
