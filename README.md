@@ -35,19 +35,19 @@ Example formatted input for inserting a classic location: `[{"mapID": 1, "lat": 
 This game mode involves being spawned in a random location a set distance away from a goal location. The objective is to use Google Street View to navigate within 100
 meters of the goal before time runs out. 
 
-<img src="./README_images/DirectionsSelectionScreen.png" alt="Directions Selection Screen" width="600"/> 
 Directions Game Mode Selection Screen
+<img src="./README_images/DirectionsSelectionScreen.png" alt="Directions Selection Screen" width="600"/> 
 
-<img src="./README_images/DirectionsInGameScreen.png" alt="Directions In Game Screen" width="600"/> 
 Directions Game Mode In-Game Example
+<img src="./README_images/DirectionsInGameScreen.png" alt="Directions In Game Screen" width="600"/> 
 
 ### Classic Game Mode
 
 This game mode is like popular websites like GeoGuessr, where the user is dropped into a random location and has to guess where they are in the on-screen mini-map
 
-<img src="./README_images/ClassicSelectionScreen.png" alt="Classic Selection Screen" width="600"/> 
 Classic Game Mode Selection Screen
+<img src="./README_images/ClassicSelectionScreen.png" alt="Classic Selection Screen" width="600"/> 
 
-<img src="./README_images/ClassicInGameScreen.png" alt="Classic In Game Screen" width="600"/> 
 Classic Game Mode In-Game Example
+<img src="./README_images/ClassicInGameScreen.png" alt="Classic In Game Screen" width="600"/> 
 
